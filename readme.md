@@ -10,7 +10,7 @@ Practice assistant: dr. Peter Muršič
 
 ## Intro 
 
-The repository serves as a personal archive of all code written during the course of Programming 2 at UP FAMNIT. The code is written in OCAML, using IntelliJ IDEA as the IDE.
+The repository serves as a personal archive of all code written during the course of Programming 2 at UP FAMNIT. The code is written in OCAML using this [online compiler](https://ocaml.famn.it).
 
 **!!!! Code may not be compliable, functional or fully completed. Use/Copy at your own risk, as the code is always submitted to a designated assigment before upload. Bugs may be included !!!!**
 
