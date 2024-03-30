@@ -4,12 +4,12 @@ Matic Bončina
 Računalništvo in Informatika - RIN SLO
 *)
 
-(*Problem #1 - Naredi brez auxa ker ti bo Peter jebal matr*)
+(*Problem #1*)
 let l3_of_3l (la, lb, lc) =
-  let rec aux acc la lb lc = match la, lb, lc with
-    | a::ta, b::tb, c::tc -> aux ((a, b, c) :: acc) ta tb tc
+  let rec pomoc acc la lb lc = match la, lb, lc with
+    | a::ta, b::tb, c::tc -> pomoc ((a, b, c) :: acc) ta tb tc
     | _, _, _ -> List.rev acc
-  in aux [] la lb lc;;
+  in pomoc [] la lb lc;;
 
 (*Test case #1*)
 let primer11 = l3_of_3l ([1;2;3] ,[1.;2.] ,[ 'a'; 'b'; 'c'; 'd']);;
@@ -26,13 +26,13 @@ let primer22 = map_fun_left [(fun x -> char_of_int ((int_of_char x) + 32)); (fun
 (*-----------------------------------*)
 (*Problem #3*)
 let explode_list strs =
-  let explode s =
-    let rec aux acc i =
-      if i >= String.length s then acc
-      else let next_acc = if s.[i] != ' ' then acc @ [s.[i]] else acc in
-           aux next_acc (i + 1)
+  let explode niz =
+    let rec pomoc acc i =
+      if i >= String.length niz then acc
+      else let next_acc = if niz.[i] != ' ' then acc @ [niz.[i]] else acc in
+        pomoc next_acc (i + 1)
     in
-    aux [] 0
+    pomoc [] 0
   in
   List.fold_left (fun acc str -> acc @ explode str) [] strs;;
 
@@ -49,9 +49,9 @@ let mode lst =
   let rec max_count acc lst = match lst with
     | [] -> acc
     | h::t ->
-      let h_count = count h lst in
-      if h_count > snd acc then max_count (h, h_count) t
-      else max_count acc t
+        let h_count = count h lst in
+        if h_count > snd acc then max_count (h, h_count) t
+        else max_count acc t
   in
   fst (max_count (List.hd lst, count (List.hd lst) lst) lst);;
   
