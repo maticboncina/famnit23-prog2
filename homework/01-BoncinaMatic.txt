@@ -1,0 +1,60 @@
+(*
+Matic Bončina
+89231371
+Računalništvo in Informatika - RIN SLO
+*)
+
+(*Problem #1 - Naredi brez auxa ker ti bo Peter jebal matr*)
+let l3_of_3l (la, lb, lc) =
+  let rec aux acc la lb lc = match la, lb, lc with
+    | a::ta, b::tb, c::tc -> aux ((a, b, c) :: acc) ta tb tc
+    | _, _, _ -> List.rev acc
+  in aux [] la lb lc;;
+
+(*Test case #1*)
+let primer11 = l3_of_3l ([1;2;3] ,[1.;2.] ,[ 'a'; 'b'; 'c'; 'd']);;
+let primer12 = l3_of_3l ([1.;2.] ,['a'; 'b'; 'c'; 'd'] ,[1;2;3]);;
+(*-----------------------------------*)
+(*Problem #2*)
+let map_fun_left funs vals =
+  let apply_funs v = List.fold_left (fun acc fn -> fn acc) v funs in
+  List.map apply_funs vals;;
+
+(*Test case #2*)
+let primer21 = map_fun_left [((+) 1); ( * ) 2; (fun x -> x - 10)] [1;2;3;4];;
+let primer22 = map_fun_left [(fun x -> char_of_int ((int_of_char x) + 32)); (fun x -> char_of_int ((int_of_char x) + 1))] ['A'; 'B'; 'C'; 'D'];;
+(*-----------------------------------*)
+(*Problem #3*)
+let explode_list strs =
+  let explode s =
+    let rec aux acc i =
+      if i >= String.length s then acc
+      else let next_acc = if s.[i] != ' ' then acc @ [s.[i]] else acc in
+           aux next_acc (i + 1)
+    in
+    aux [] 0
+  in
+  List.fold_left (fun acc str -> acc @ explode str) [] strs;;
+
+(*Test case #3*)
+let primer31 = explode_list ["ab";"cde ";"f";"";" ghij "];;
+
+(*-----------------------------------*)
+(*Problem #4*)
+let mode lst =
+  let rec count x lst = match lst with
+    | [] -> 0
+    | h::t -> (if x = h then 1 else 0) + count x t
+  in
+  let rec max_count acc lst = match lst with
+    | [] -> acc
+    | h::t ->
+      let h_count = count h lst in
+      if h_count > snd acc then max_count (h, h_count) t
+      else max_count acc t
+  in
+  fst (max_count (List.hd lst, count (List.hd lst) lst) lst);;
+  
+(*Test case #4*)
+let primer41 = mode [1;2;1;4;2;5;1;2;6];;
+let primer42 = mode ['a'; 'b'; 'c'; 'b'; 'a'; 'b'; 'd'; 'c'; 'd'];;
