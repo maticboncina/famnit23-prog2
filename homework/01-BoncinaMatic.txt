@@ -28,13 +28,13 @@ let primer22 = map_fun_left [(fun x -> char_of_int ((int_of_char x) + 32)); (fun
 let explode_list strs =
   let explode niz =
     let rec pomoc acc i =
-      if i >= String.length niz then acc
-      else let next_acc = if niz.[i] != ' ' then acc @ [niz.[i]] else acc in
+      if i >= String.length niz then List.rev acc
+      else let next_acc = if niz.[i] != ' ' then niz.[i] :: acc else acc in
         pomoc next_acc (i + 1)
     in
     pomoc [] 0
   in
-  List.fold_left (fun acc str -> acc @ explode str) [] strs;;
+  List.fold_left (fun acc str -> List.rev_append (explode str) acc) [] strs |> List.rev;; 
 
 (*Test case #3*)
 let primer31 = explode_list ["ab";"cde ";"f";"";" ghij "];;
