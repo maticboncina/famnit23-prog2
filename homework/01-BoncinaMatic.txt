@@ -1,6 +1,5 @@
 (*
 Matic Bončina
-89231371
 Računalništvo in Informatika - RIN SLO
 *)
 
@@ -25,16 +24,26 @@ let primer21 = map_fun_left [((+) 1); ( * ) 2; (fun x -> x - 10)] [1;2;3;4];;
 let primer22 = map_fun_left [(fun x -> char_of_int ((int_of_char x) + 32)); (fun x -> char_of_int ((int_of_char x) + 1))] ['A'; 'B'; 'C'; 'D'];;
 (*-----------------------------------*)
 (*Problem #3*)
+
 let explode_list strs =
-  let explode niz =
-    let rec pomoc acc i =
-      if i >= String.length niz then List.rev acc
-      else let next_acc = if niz.[i] != ' ' then niz.[i] :: acc else acc in
-        pomoc next_acc (i + 1)
+  let explode str =
+    let rec aux acc i =
+      if i >= String.length str then acc
+      else if str.[i] = ' ' then aux acc (i + 1)  (* deportiramo spaces, ker so useless *)
+      else aux (str.[i] :: acc) (i + 1)
     in
-    pomoc [] 0
+    aux [] 0
   in
-  List.fold_left (fun acc str -> List.rev_append (explode str) acc) [] strs |> List.rev;; 
+  let rec append_no_rev acc l = match l with
+    | [] -> acc
+    | x::xs -> append_no_rev (x :: acc) xs
+  in
+  let rec fold_fun acc str = 
+    let exploded_str_rev = explode str in
+    append_no_rev acc (List.rev exploded_str_rev)
+  in
+  List.fold_left fold_fun [] strs |> List.rev;;
+
 
 (*Test case #3*)
 let primer31 = explode_list ["ab";"cde ";"f";"";" ghij "];;
