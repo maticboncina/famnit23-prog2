@@ -1,0 +1,162 @@
+(* Podatki *)
+(*
+Matic Bončina
+Računalništvo in Informatika - RIN SLO
+*)
+
+(*------------------*)
+(* Naloga 1 *)
+
+(* Definicije*)
+type pipe = LeftRight | UpDown | DownRight | DownLeft | UpRight | UpDownRight | DownLeftRight 
+
+(*Mapiranje*)
+let pipe_to_index = function
+  | LeftRight -> "\u{2550}"
+  | UpDown -> "\u{2551}"
+  | DownRight -> "\u{2554}"
+  | DownLeft -> "\u{2557}"
+  | UpRight -> "\u{255A}"
+  | UpDownRight -> "\u{2560}"
+  | DownLeftRight -> "\u{2566}"
+
+(* Definicija povezav *)
+type connection = {
+  left : bool;
+  right : bool;
+  up : bool;
+  down : bool
+}
+
+let connections = function
+  | LeftRight -> {left = true; right = true; up = false; down = false}
+  | UpDown -> {left = false; right = false; up = true; down = true}
+  | DownRight -> {left = false; right = true; up = false; down = true}
+  | DownLeft -> {left = true; right = false; up = false; down = true}
+  | UpRight -> {left = false; right = true; up = true; down = false}
+  | UpDownRight -> {left = false; right = true; up = true; down = true}
+  | DownLeftRight -> {left = true; right = true; up = false; down = true}
+
+(* Printaje  *)
+let print_matrix matrix =
+  Array.iter (fun row ->
+      Array.iter (fun pipe ->
+          print_string (pipe_to_index pipe);
+        ) row;
+      print_newline ()) matrix
+
+(* Funkcija za flow in za iskanje puščanja *)
+let getleaks matrix =
+  let m = Array.length matrix in
+  let n = Array.length matrix.(0) in
+  let flowed = Array.make_matrix m n false in
+  let leaks = ref [] in
+
+  (* izpišemo original matriko *)
+  print_string "Original:\n";
+  print_matrix matrix;
+  print_newline ();
+
+  (* flow *)
+  let rec propagate i j =
+    if i >= 0 && i < m && j >= 0 && j < n && not flowed.(i).(j) then begin
+      flowed.(i).(j) <- true;
+      let conn = connections matrix.(i).(j) in
+
+      (* preveri povezave *)
+      if conn.right && j + 1 < n && (connections matrix.(i).(j+1)).left then propagate i (j+1);
+      if conn.left && j > 0 && (connections matrix.(i).(j-1)).right then propagate i (j-1);
+      if conn.up && i > 0 && (connections matrix.(i-1).(j)).down then propagate (i-1) j;
+      if conn.down && i + 1 < m && (connections matrix.(i+1).(j)).up then propagate (i+1) j;
+    end
+  in
+
+(*začetek flowa*)
+  propagate 0 0;
+
+  for i = 0 to m - 1 do
+    for j = 0 to n - 1 do
+      if flowed.(i).(j) && not (i = 0 && j = 0) then begin
+        let conn = connections matrix.(i).(j) in
+        (* Conditions to identify leaks *)
+        if (conn.right && (j + 1 >= n || not (connections matrix.(i).(j+1)).left)) ||
+           (conn.left && (j = 0 || not (connections matrix.(i).(j-1)).right)) ||
+           (conn.up && (i = 0 || not (connections matrix.(i-1).(j)).down)) ||
+           (conn.down && (i + 1 >= m || not (connections matrix.(i+1).(j)).up))
+        then leaks := (i, j) :: !leaks;
+      end
+    done;
+  done;
+
+  (* izpiše flow matriko *)
+  print_string "Flow:\n";
+  Array.iteri (fun i row ->
+      Array.iteri (fun j pipe ->
+          if flowed.(i).(j) then print_string (pipe_to_index pipe)
+          else print_string "\u{2588}";
+        ) row;
+      print_newline ()) matrix;
+
+  !leaks
+
+let matrix1=  [|[|DownLeft; UpDownRight; UpDownRight; UpDown; DownLeft; DownLeftRight;
+                  UpDownRight|];
+                [|UpDownRight; LeftRight; DownLeftRight; LeftRight; DownLeftRight;
+                  DownLeft; DownLeft|];
+                [|DownLeft; DownLeft; DownLeftRight; LeftRight; UpRight; DownLeftRight;
+                  LeftRight|];
+                [|DownLeft; UpDown; UpDown; UpDown; UpDownRight; UpDown; UpDown|];
+                [|LeftRight; DownRight; DownLeft; LeftRight; UpRight; DownLeft;
+                  DownRight|];
+                [|DownRight; UpDown; UpDownRight; LeftRight; UpRight; UpRight; UpDown|]|];;
+let matrix2=[|[|LeftRight; DownLeftRight; DownLeftRight; DownRight; UpRight; DownLeft;
+                UpRight; DownRight; DownLeft; UpDownRight|];
+              [|UpDownRight; UpDownRight; UpRight; DownLeft; UpDown; DownRight;
+                UpDownRight; UpRight; UpDownRight; LeftRight|];
+              [|LeftRight; UpDownRight; LeftRight; UpDown; DownLeftRight; DownLeft;
+                UpDown; DownLeftRight; LeftRight; DownLeftRight|];
+              [|UpDown; UpRight; DownLeftRight; DownLeft; DownLeft; UpDown;
+                UpDownRight; LeftRight; UpDownRight; UpDown|];
+              [|DownLeftRight; DownLeftRight; UpDownRight; DownLeft; UpDownRight;
+                UpDownRight; DownRight; UpDown; DownLeft; UpDownRight|]|];;
+
+(* laufar *)
+let leaks1 = getleaks matrix1
+let leaks2 = getleaks matrix2
+
+(*------------------*)
+(* Naloga 2a - Funkcija za dolzino *)
+
+
+let rec length = function
+  | Emptytree -> 0
+  | Node n -> n.count + (length n.ltl) + (length n.rtl)
+
+(*------------------*)
+(* Naloga 2b - Funkcija za count *)
+
+let rec count x = function
+  | Emptytree -> 0
+  | Node n ->
+    if x = n.hd then n.count
+    else if x < n.hd then count x n.ltl
+    else count x n.rtl
+
+(*------------------*)
+(* Naloga 2c - Funkcija za insert *)
+
+let rec insert x = function
+  | Emptytree -> Node {hd = x; count = 1; ltl = Emptytree; rtl = Emptytree}
+  | Node n as node ->
+    if x = n.hd then (
+      n.count <- n.count + 1;
+      node
+    )
+    else if x < n.hd then (
+      n.ltl <- insert x n.ltl;
+      node
+    )
+    else (
+      n.rtl <- insert x n.rtl;
+      node
+    )
