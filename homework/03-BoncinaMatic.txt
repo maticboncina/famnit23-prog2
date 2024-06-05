@@ -1,0 +1,165 @@
+(* Podatki *)
+(*
+Matic Bončina
+Računalništvo in Informatika - RIN SLO
+*)
+
+(*Naloga 1*)
+
+class virtual ['a] matrix_game m pf = object 
+  val matrix: 'a array array = m
+  val rows = Array.length m
+  val cols = Array.length m.(0)
+  val print_function: 'a -> unit = pf
+  method print =
+    for i = (-1) to cols do print_char '-' done; print_char '\n';
+    Array.iter (fun x -> print_char '|'; Array.iter (fun y -> print_function y) x; print_endline "|") matrix;
+    for i = (-1) to cols do print_char '-' done; print_char '\n'
+  method private is_out_of_bounds (y, x) = y >= rows || y < 0 || x >= cols || x < 0
+  method virtual private is_legal : int * int -> 'a -> bool
+  method virtual insert : int * int -> 'a -> unit
+end;;
+
+class sudoku = object (self)
+  inherit [int] matrix_game (Array.make_matrix 9 9 0) (fun x -> if x = 0 then print_char ' ' else print_int x)
+  
+  method private is_legal (y, x) v =
+    if self#is_out_of_bounds (y, x) then false
+    else
+      let row_check = Array.for_all (fun elem -> elem <> v) matrix.(y) in
+      let col_check = Array.for_all (fun row -> row.(x) <> v) matrix in
+      row_check && col_check
+
+  method insert (pos: int * int) (value: int) =
+    let (y, x) = pos in
+    if self#is_out_of_bounds (y, x) then ()
+    else if value < 1 || value > 9 then matrix.(y).(x) <- 0
+    else if self#is_legal (y, x) value then matrix.(y).(x) <- value
+
+  method private is_out_of_bounds (pos: int * int) =
+    let (y, x) = pos in
+    y >= 9 || y < 0 || x >= 9 || x < 0
+end;;
+
+(* predefined tests *)
+
+let s1 = new sudoku ;;
+s1#insert (-1, 3) 4;
+s1#print ;;
+s1#insert (1, 3) 1;
+s1#print ;;
+s1#insert (1, 3) 11;
+s1#print ;;
+s1#insert (0, 0) 1;
+s1#print ;;
+s1#insert (0, 0) 0;
+s1#print ;;
+s1#insert (1, 1) 4;
+s1#print ;;
+s1#insert (1, 2) 5;
+s1#print ;;
+s1#insert (1, 4) 5;
+s1#print ;;
+s1#insert (3, 1) 4;
+s1#print ;;
+s1#insert (4, 1) 3;
+s1#print ;;
+
+(*Naloga 2*)
+
+module Tic_tac_toe : sig
+  type t
+  val init : unit -> t
+  val naught_plays : int * int -> t -> unit
+  val cross_plays : int * int -> t -> unit
+  val print_board : t -> unit
+  val current_player : t -> string
+  val get_board : t -> string array array
+end = struct
+  type player = Cross | Naught
+
+  type t = {
+    board : string array array;
+    mutable current_player : player;
+  }
+
+  let init () = 
+    { board = Array.make_matrix 3 3 " "; current_player = Cross }
+
+  let print_board t =
+    let board = t.board in
+    for i = 0 to 2 do
+      for j = 0 to 2 do
+        print_string board.(i).(j);
+        if j < 2 then print_string "|"
+      done;
+      print_endline "";
+      if i < 2 then print_endline "-----"
+    done
+
+  let next_player = function
+    | Cross -> Naught
+    | Naught -> Cross
+
+  let current_player_str = function
+    | Cross -> "Cross"
+    | Naught -> "Naught"
+
+  let make_move (x, y) piece t =
+    if x < 0 || x > 2 || y < 0 || y > 2 || t.board.(x).(y) <> " " then
+      ()
+    else (
+      t.board.(x).(y) <- piece;
+      t.current_player <- next_player t.current_player;
+      print_endline ("It is " ^ (current_player_str t.current_player) ^ "'s turn");
+      print_board t
+    )
+
+  let naught_plays (x, y) t =
+    if t.current_player = Naught then
+      make_move (x, y) "o" t
+    else
+      (print_endline "It is Cross's turn"; print_board t)
+
+  let cross_plays (x, y) t =
+    if t.current_player = Cross then
+      make_move (x, y) "x" t
+    else
+      (print_endline "It is Naught's turn"; print_board t)
+
+  let current_player t = current_player_str t.current_player
+
+  let get_board t = t.board
+end
+
+module Naught : sig
+  type t = Tic_tac_toe.t
+  val init : unit -> t
+  val naught_plays : int * int -> t -> unit
+end = struct
+  type t = Tic_tac_toe.t
+  let init = Tic_tac_toe.init
+  let naught_plays = Tic_tac_toe.naught_plays
+end
+
+module Cross : sig
+  type t = Tic_tac_toe.t
+  val init : unit -> t
+  val cross_plays : int * int -> t -> unit
+end = struct
+  type t = Tic_tac_toe.t
+  let init = Tic_tac_toe.init
+  let cross_plays = Tic_tac_toe.cross_plays
+end 
+
+(* predefined tetsing classes *)
+
+let board1 = Tic_tac_toe.init () ;;
+Naught.naught_plays (1,1) board1 ;;
+Cross.cross_plays (1,-1) board1 ;;
+Cross.cross_plays (1,1) board1 ;; 
+Naught.naught_plays (1,1) board1 ;;
+Naught.naught_plays (1,2) board1 ;;
+Cross.cross_plays (1,2) board1 ;;
+Cross.cross_plays (0,0) board1 ;;
+Naught.naught_plays (2,1) board1 ;;
